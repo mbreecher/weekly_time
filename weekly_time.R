@@ -19,7 +19,9 @@ role_dates[,!(colnames(role_dates) %in% (c("Full.Name")))] <-
 
 #set all time to PSM when the title says psm or sr psm
 timelog$role <- NA
+daily_hours$role <- NA
 timelog[timelog$User.Title %in% unique(timelog$User.Title)[grep("Professional", unique(timelog$User.Title))],]$role <- "PSM"
+daily_hours$role <- "PSM"
 
 # time_started <- proc.time()
 #for those with a start date, set time before to NA
@@ -38,6 +40,9 @@ for (i in 1:length(role_dates[!is.na(role_dates$to_senior),]$Full.Name)){
   if(length(timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role) > 0){
     timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role <- "Sr PSM"
   }
+  if(length(daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role) > 0){
+    daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role <- "Sr PSM"
+  }
 }
 
 #for srs promoted to tms, set time forward to TM
@@ -46,6 +51,9 @@ for (i in 1:length(role_dates[!is.na(role_dates$to_tm),]$Full.Name)){
   promotion_date <- role_dates[!is.na(role_dates$to_tm),]$to_tm[i]
   if(length(timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role) > 0 ){
     timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role <- "TM"
+  }
+  if(length(daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role) > 0){
+    daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role <- "TM"
   }
 }
 
@@ -56,6 +64,9 @@ for (i in 1:length(role_dates[!is.na(role_dates$to_director),]$Full.Name)){
   if(length(timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role) > 0){
     timelog[timelog$User %in% psm & timelog$Date >= promotion_date, ]$role <- "Director"
   }
+  if(length(daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role) > 0){
+    daily_hours[daily_hours$User %in% psm & daily_hours$Date >= promotion_date, ]$role <- "Director"
+  }
 }
 
 #for psms who left PS, set time forward to NA
@@ -65,12 +76,16 @@ for (i in 1:length(role_dates[!is.na(role_dates$End.Date),]$Full.Name)){
   if(length(timelog[timelog$User %in% psm & timelog$Date >= term_date, ]$role) > 0){
     timelog[timelog$User %in% psm & timelog$Date >= term_date, ]$role <- NA
   }
+  if(length(daily_hours[daily_hours$User %in% psm & daily_hours$Date >= term_date, ]$role) > 0){
+    daily_hours[daily_hours$User %in% psm & daily_hours$Date >= term_date, ]$role <- "TM"
+  }
 }
 
 # proc.time() - time_started
 
 #set week integer
 timelog$week <- paste(week(timelog$Date), year(timelog$Date), sep = "-")
+daily_hours$week <- paste(week(daily_hours$Date), year(daily_hours$Date), sep = "-")
 labels <- ddply(timelog, .var = c("week"), function(x){
   min <- min(x$Date)
   max <- max(x$Date)
@@ -78,9 +93,21 @@ labels <- ddply(timelog, .var = c("week"), function(x){
   data.frame(week = x$week, 
              label = label)
 })
+labels_dh <- ddply(daily_hours, .var = c("week"), function(x){
+  min <- min(x$Date)
+  max <- max(x$Date)
+  label <- paste(strftime(min, '%m/%d')," - ", strftime(max, '%m/%d'), sep = "")
+  data.frame(week = x$week, 
+             label = label)
+})
 labels <- unique(labels)
+labels_dh <- unique(labels_dh)
 timelog <- merge(timelog, labels, by = c("week"), all.x = T)
+daily_hours <- merge(daily_hours, labels_dh, by = c("week"), all.x = T)
+
+timelog_by_week <- aggregate(Hours ~ User + week + label + role, data = timelog, FUN = sum)
+daily_by_week <- aggregate(Hours ~ User + week + label + role, data = daily_hours, FUN = sum)
 
 setwd("C:/R/workspace/timelog/weekly_time/output")
-write.csv(timelog, file = "timelog_by_week.csv", row.names = F, na = "")
-write.csv(daily_hours, file = "daily_by_week.csv", row.names = F, na = "")
+write.csv(timelog_by_week, file = "timelog_by_week.csv", row.names = F, na = "")
+write.csv(daily_by_week, file = "daily_by_week.csv", row.names = F, na = "")
