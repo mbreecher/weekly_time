@@ -89,6 +89,7 @@ daily_hours$week <- paste(week(daily_hours$Date), year(daily_hours$Date), sep = 
 labels <- ddply(timelog, .var = c("week"), function(x){
   min <- min(x$Date)
   max <- max(x$Date)
+  count <- unique(x$User)
   label <- paste(strftime(min, '%m/%d')," - ", strftime(max, '%m/%d'), sep = "")
   data.frame(week = x$week, 
              label = label)
@@ -97,6 +98,7 @@ labels_dh <- ddply(daily_hours, .var = c("week"), function(x){
   min <- min(x$Date)
   max <- max(x$Date)
   label <- paste(strftime(min, '%m/%d')," - ", strftime(max, '%m/%d'), sep = "")
+  count <- unique(x$User)
   data.frame(week = x$week, 
              label = label)
 })
