@@ -1,4 +1,7 @@
 library(RecordLinkage)
+library(plyr)
+library(reshape2)
+library(xlsx)
 
 #read in timelog using base function
 setwd("C:/R/workspace/shared")
@@ -84,8 +87,8 @@ for (i in 1:length(role_dates[!is.na(role_dates$End.Date),]$Full.Name)){
 # proc.time() - time_started
 
 #set week integer
-timelog$week <- paste(week(timelog$Date), year(timelog$Date), sep = "-")
-daily_hours$week <- paste(week(daily_hours$Date), year(daily_hours$Date), sep = "-")
+timelog$week <- paste(year(timelog$Date),week(timelog$Date), sep = "-")
+daily_hours$week <- paste(year(daily_hours$Date), week(daily_hours$Date), sep = "-")
 labels <- ddply(timelog, .var = c("week"), function(x){
   min <- min(x$Date)
   max <- max(x$Date)
@@ -111,5 +114,10 @@ timelog_by_week <- aggregate(Hours ~ User + week + label + role, data = timelog,
 daily_by_week <- aggregate(Hours ~ User + week + label + role, data = daily_hours, FUN = sum)
 
 setwd("C:/R/workspace/timelog/weekly_time/output")
-write.csv(timelog_by_week, file = "timelog_by_week.csv", row.names = F, na = "")
-write.csv(daily_by_week, file = "daily_by_week.csv", row.names = F, na = "")
+# write.csv(timelog_by_week, file = "timelog_by_week.csv", row.names = F, na = "")
+# write.csv(daily_by_week, file = "daily_by_week.csv", row.names = F, na = "")
+
+#excel output to multiple tabs
+write.xlsx(x = timelog_by_week, file = "time_by_week.xlsx",sheetName = "timelog_by_week", row.names = FALSE)
+write.xlsx(x = daily_by_week, file = "time_by_week.xlsx",sheetName = "daily_by_week", row.names = FALSE, append = TRUE)
+
