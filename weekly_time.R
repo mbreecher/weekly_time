@@ -87,8 +87,8 @@ for (i in 1:length(role_dates[!is.na(role_dates$End.Date),]$Full.Name)){
 # proc.time() - time_started
 
 #set week integer
-timelog$week <- paste(year(timelog$Date),week(timelog$Date), sep = "-")
-daily_hours$week <- paste(year(daily_hours$Date), week(daily_hours$Date), sep = "-")
+timelog$week <- paste(year(timelog$Date),sprintf("%02d", week(timelog$Date)), sep = "-")
+daily_hours$week <- paste(year(daily_hours$Date), sprintf("%02d", week(daily_hours$Date)), sep = "-")
 labels <- ddply(timelog, .var = c("week"), function(x){
   min <- min(x$Date)
   max <- max(x$Date)
