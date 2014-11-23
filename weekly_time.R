@@ -110,7 +110,7 @@ labels_dh <- unique(labels_dh)
 timelog <- merge(timelog, labels, by = c("week"), all.x = T)
 daily_hours <- merge(daily_hours, labels_dh, by = c("week"), all.x = T)
 
-timelog_by_week <- aggregate(Hours ~ User + week + label + role, data = timelog, FUN = sum)
+timelog_by_week <- aggregate(Hours ~ User + week + label + role + Activity, data = timelog, FUN = sum)
 daily_by_week <- aggregate(Hours ~ User + week + label + role, data = daily_hours, FUN = sum)
 
 setwd("C:/R/workspace/timelog/weekly_time/output")
